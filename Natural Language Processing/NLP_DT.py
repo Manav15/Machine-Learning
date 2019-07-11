@@ -30,6 +30,7 @@ X=cv.fit_transform(corpus).toarray()
 
 y=data.iloc[:,1].values
 
+#Splitting the dataset
 from sklearn.model_selection import train_test_split
 X_train,X_test,Y_train,Y_test=train_test_split(X,y,test_size=0.2,random_state=0)
 
