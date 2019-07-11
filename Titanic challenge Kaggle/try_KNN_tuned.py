@@ -1,0 +1,57 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+train=pd.read_csv('train.csv')
+train['Embarked']=train['Embarked'].fillna(value='U')
+test=pd.read_csv('test.csv')
+test['Embarked']=test['Embarked'].fillna(value='U')
+X_train=train.iloc[:,[2,4,5,6,7,9,11]].values
+y_train=train.iloc[:,1:2].values
+X_test=test.iloc[:,[1,3,4,5,6,8,10]].values
+
+
+from sklearn.preprocessing import Imputer
+md=Imputer()
+X_train[:,[2]]=md.fit_transform(X_train[:,[2]])
+X_test[:,[2]]=md.fit_transform(X_test[:,[2]])
+X_test[:,[5]]=md.fit_transform(X_test[:,[5]])
+
+from sklearn.preprocessing import LabelEncoder,OneHotEncoder
+le_x=LabelEncoder()
+onhe_x=OneHotEncoder(categorical_features=[0,6])
+X_train[:,1]=le_x.fit_transform(X_train[:,1])
+X_train[:,6]=le_x.fit_transform(X_train[:,6])
+X_train=onhe_x.fit_transform(X_train).toarray()
+X_test[:,1]=le_x.fit_transform(X_test[:,1])
+X_test[:,6]=le_x.fit_transform(X_test[:,6])
+X_test=onhe_x.fit_transform(X_test).toarray()
+X_train=X_train[:,1:]
+
+from sklearn.preprocessing import StandardScaler
+sc=StandardScaler()
+X_train=sc.fit_transform(X_train)
+X_test=sc.fit_transform(X_test)
+
+from sklearn.neighbors import KNeighborsClassifier
+classifier=KNeighborsClassifier(n_neighbors=7,leaf_size=20)
+classifier.fit(X_train,y_train)
+
+y_pred=classifier.predict(X_test)
+y_pred=np.reshape(y_pred,(418,1))
+pass_id=test.iloc[:,0].values
+pass_id=np.reshape(pass_id,(418,1))
+
+y_result=np.append(arr=pass_id,values=y_pred,axis=1)
+
+from sklearn.model_selection import cross_val_score
+accuracies=cross_val_score(estimator=classifier,X=X_train,y=Y_train,cv=10)
+accuracies.mean()
+accuracies.std()
+
+from sklearn.model_selection import GridSearchCV
+parameters=[{'n_neighbors':[1,5,7,10,20],'weights':['uniform','distance'],'algorithm':['auto', 'ball_tree', 'kd_tree', 'brute'],'leaf_size':[20,30,50,100],'p':[1,2,3,4,5,6]}]
+grid_search=GridSearchCV(estimator=classifier,param_grid=parameters,scoring='accuracy',cv=10)
+grid_search=grid_search.fit(X_train,y_train)
+best_parameters=grid_search.best_params_
+best_scores=grid_search.best_score_
